@@ -9,8 +9,16 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors;
+using AspNetCoreRateLimit;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Rate Limiting - باید قبل از سایر سرویس‌ها تنظیم شود
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.Configure<IpRateLimitPolicies>(builder.Configuration.GetSection("IpRateLimitPolicies"));
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
 // Add DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -35,6 +43,16 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 // Add JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"];
+
+// Validate JWT SecretKey is configured
+if (string.IsNullOrWhiteSpace(secretKey) || secretKey.Length < 32)
+{
+    throw new InvalidOperationException(
+        "JWT SecretKey is not configured or is too short. " +
+        "Please set 'JwtSettings:SecretKey' in User Secrets (Development) or Environment Variables (Production). " +
+        "The key must be at least 32 characters long. " +
+        "Example: dotnet user-secrets set \"JwtSettings:SecretKey\" \"YourStrongRandomKey32CharsOrMore\"");
+}
 
 builder.Services.AddAuthentication(options =>
 {
@@ -80,7 +98,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFromFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
@@ -88,7 +106,6 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddMvc();
-builder.Services.AddCors();
 // Add Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -134,7 +151,11 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddOpenApi();
 
 // Health checks
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<ApplicationDbContext>(
+        name: "database",
+        tags: new[] { "db", "sql" });
+
 
 // Add global exception handler
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -167,6 +188,9 @@ app.UseHttpsRedirection();
 // Serve static files (for test-api.html, test-api.js, etc.)
 app.UseStaticFiles();
 
+// Use Rate Limiting
+app.UseIpRateLimiting();
+
 // Apply CORS before auth to affect 401/403 as well
 app.UseCors("AllowFromFrontend");
 
@@ -190,8 +214,30 @@ app.MapGet("/test-api", async (HttpContext context) =>
 
 app.MapControllers();
 
-// Health check endpoint
-app.MapHealthChecks("/health");
+// Health check endpoint with detailed response
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var result = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            status = report.Status.ToString(),
+            timestamp = DateTime.UtcNow,
+            duration = report.TotalDuration,
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description,
+                duration = e.Value.Duration,
+                exception = e.Value.Exception?.Message,
+                data = e.Value.Data
+            })
+        });
+        await context.Response.WriteAsync(result);
+    }
+});
 
 var summaries = new[]
 {
