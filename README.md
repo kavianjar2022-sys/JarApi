@@ -2,6 +2,14 @@
 
 A simple ASP.NET Core Web API targeting .NET 9.0 with ASP.NET Core Identity authentication using JWT tokens. The authentication system uses Personnel Code instead of email and includes custom user fields.
 
+## ⚠️ Security Notice
+
+**IMPORTANT:** Before deploying this application:
+1. Change the JWT `SecretKey` in `appsettings.json` to a strong, random value (minimum 32 characters)
+2. Never commit database passwords or sensitive configuration to source control
+3. Use User Secrets for development and Environment Variables for production
+4. See [SECURITY.md](SECURITY.md) for detailed security guidelines
+
 ## Features
 
 - JWT Bearer Authentication
@@ -15,9 +23,24 @@ A simple ASP.NET Core Web API targeting .NET 9.0 with ASP.NET Core Identity auth
 
 ## Configuration
 
+### Security-First Configuration
+
+**For Development:** Use User Secrets (recommended)
+```bash
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=.;Database=JarApiDb;User Id=YourUser;Password=YourPassword;TrustServerCertificate=True"
+dotnet user-secrets set "JwtSettings:SecretKey" "YourVeryStrongRandomSecretKey32CharactersOrMore"
+```
+
+**For Production:** Use Environment Variables
+```bash
+# See SECURITY.md for detailed instructions
+export ConnectionStrings__DefaultConnection="..."
+export JwtSettings__SecretKey="..."
+```
+
 ### Database Connection
 
-Update the connection string in `appsettings.json`:
+The default `appsettings.json` uses Windows Authentication (Trusted_Connection):
 
 ```json
 "ConnectionStrings": {
@@ -27,11 +50,11 @@ Update the connection string in `appsettings.json`:
 
 ### JWT Settings
 
-Configure JWT settings in `appsettings.json`:
+⚠️ **MUST CHANGE** before production deployment:
 
 ```json
 "JwtSettings": {
-  "SecretKey": "YourSuperSecretKeyForJwtTokenGenerationMinimum32Characters!",
+  "SecretKey": "CHANGE_THIS_TO_A_STRONG_RANDOM_SECRET",
   "Issuer": "JarApi",
   "Audience": "JarApiClients",
   "ExpiryMinutes": 60
