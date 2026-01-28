@@ -9,8 +9,16 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors;
+using AspNetCoreRateLimit;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Rate Limiting - باید قبل از سایر سرویس‌ها تنظیم شود
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.Configure<IpRateLimitPolicies>(builder.Configuration.GetSection("IpRateLimitPolicies"));
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
 // Add DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -165,6 +173,9 @@ app.UseHttpsRedirection();
 
 // Serve static files (for test-api.html, test-api.js, etc.)
 app.UseStaticFiles();
+
+// Use Rate Limiting
+app.UseIpRateLimiting();
 
 // Apply CORS before auth to affect 401/403 as well
 app.UseCors("AllowFromFrontend");
