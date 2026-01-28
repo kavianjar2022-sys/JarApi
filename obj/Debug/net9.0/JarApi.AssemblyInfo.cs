@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("JarApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+de290399fc4d8af8ea2d6ef38ffea06feffae4bb")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b3942f633ca60e8832f403b6469c1a90ee7551e5")]
 [assembly: System.Reflection.AssemblyProductAttribute("JarApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("JarApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
