@@ -44,6 +44,16 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"];
 
+// Validate JWT SecretKey is configured
+if (string.IsNullOrWhiteSpace(secretKey) || secretKey.Length < 32)
+{
+    throw new InvalidOperationException(
+        "JWT SecretKey is not configured or is too short. " +
+        "Please set 'JwtSettings:SecretKey' in User Secrets (Development) or Environment Variables (Production). " +
+        "The key must be at least 32 characters long. " +
+        "Example: dotnet user-secrets set \"JwtSettings:SecretKey\" \"YourStrongRandomKey32CharsOrMore\"");
+}
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -141,7 +151,11 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddOpenApi();
 
 // Health checks
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<ApplicationDbContext>(
+        name: "database",
+        tags: new[] { "db", "sql" });
+
 
 // Add global exception handler
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -200,8 +214,30 @@ app.MapGet("/test-api", async (HttpContext context) =>
 
 app.MapControllers();
 
-// Health check endpoint
-app.MapHealthChecks("/health");
+// Health check endpoint with detailed response
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var result = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            status = report.Status.ToString(),
+            timestamp = DateTime.UtcNow,
+            duration = report.TotalDuration,
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description,
+                duration = e.Value.Duration,
+                exception = e.Value.Exception?.Message,
+                data = e.Value.Data
+            })
+        });
+        await context.Response.WriteAsync(result);
+    }
+});
 
 var summaries = new[]
 {

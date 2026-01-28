@@ -4,11 +4,22 @@ A simple ASP.NET Core Web API targeting .NET 9.0 with ASP.NET Core Identity auth
 
 ## ⚠️ Security Notice
 
-**IMPORTANT:** Before deploying this application:
-1. Change the JWT `SecretKey` in `appsettings.json` to a strong, random value (minimum 32 characters)
-2. Never commit database passwords or sensitive configuration to source control
-3. Use User Secrets for development and Environment Variables for production
+**CRITICAL:** This application requires configuration before it can run:
+
+1. **JWT SecretKey is REQUIRED** - The application will fail to start without it
+2. **Never commit passwords or secrets** to source control
+3. **Use User Secrets** for development and **Environment Variables** for production
 4. See [SECURITY.md](SECURITY.md) for detailed security guidelines
+
+### Quick Start Configuration
+
+```bash
+# Set JWT Secret Key (REQUIRED - minimum 32 characters)
+dotnet user-secrets set "JwtSettings:SecretKey" "$(openssl rand -base64 48)"
+
+# Optional: Set custom database connection
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=.;Database=JarApiDb;Trusted_Connection=True;MultipleActiveResultSets=true"
+```
 
 ## Features
 
@@ -50,16 +61,21 @@ The default `appsettings.json` uses Windows Authentication (Trusted_Connection):
 
 ### JWT Settings
 
-⚠️ **MUST CHANGE** before production deployment:
+⚠️ **JWT SecretKey is now REQUIRED and validated at startup**
 
-```json
-"JwtSettings": {
-  "SecretKey": "CHANGE_THIS_TO_A_STRONG_RANDOM_SECRET",
-  "Issuer": "JarApi",
-  "Audience": "JarApiClients",
-  "ExpiryMinutes": 60
-}
+The `appsettings.json` file intentionally has an empty SecretKey. You **MUST** configure it using User Secrets or Environment Variables:
+
+```bash
+# Development (User Secrets) - REQUIRED
+dotnet user-secrets set "JwtSettings:SecretKey" "YourVeryStrongRandomSecretKeyMustBe32CharactersOrMore"
+
+# Production (Environment Variable)
+export JwtSettings__SecretKey="YourVeryStrongRandomSecretKeyMustBe32CharactersOrMore"
 ```
+
+The application will throw an exception on startup if:
+- SecretKey is not set
+- SecretKey is less than 32 characters
 
 ## Database Setup
 
