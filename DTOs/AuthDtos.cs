@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using JarApi.Models;
 
 namespace JarApi.DTOs;
 
@@ -17,12 +18,17 @@ public class RegisterDto
     [Required(ErrorMessage = "نام خانوادگی الزامی است")]
     public string LastName { get; set; } = string.Empty;
 
+    // جنسیت
+    public Gender Gender { get; set; } = Gender.Male;
+
+    // مدرک تحصیلی (اختیاری)
+    public Guid? EducationDegreeId { get; set; }
+
     // فیلدهای اختیاری
     public string? FaceCode { get; set; }
     public DateTime? BirthDate { get; set; }
     public DateTime? HireDate { get; set; }
     public string? MobileNumber { get; set; }
-    public string? NationalCode { get; set; }
     public string? InsuranceCode { get; set; }
     public string? HomePhoneNumber { get; set; }
 }
@@ -46,9 +52,31 @@ public class AuthResponseDto
 
 public class UserInfoDto
 {
+    public string UserId { get; set; } = string.Empty;
     public string PersonnelCode { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
+    public Gender Gender { get; set; }
+    public Guid? EducationDegreeId { get; set; }
+    public string? EducationDegreeName { get; set; }
+    public string? FaceCode { get; set; }
+    public DateTime? BirthDate { get; set; }
+    public DateTime? HireDate { get; set; }
+    public string? MobileNumber { get; set; }
+    public string? InsuranceCode { get; set; }
+    public string? HomePhoneNumber { get; set; }
+}
+
+public class UpdateUserDto
+{
+    [Required(ErrorMessage = "نام الزامی است")]
+    public string FirstName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "نام خانوادگی الزامی است")]
+    public string LastName { get; set; } = string.Empty;
+
+    public Gender Gender { get; set; }
+    public Guid? EducationDegreeId { get; set; }
     public string? FaceCode { get; set; }
     public DateTime? BirthDate { get; set; }
     public DateTime? HireDate { get; set; }

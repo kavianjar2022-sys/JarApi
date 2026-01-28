@@ -25,6 +25,17 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<Unit> Units { get; set; }
     public DbSet<UserRoleUnit> UserRoleUnits { get; set; }
 
+    // شیفت کاری
+    public DbSet<ShiftDefinition> ShiftDefinitions { get; set; }
+    public DbSet<ShiftRotationSegment> ShiftRotationSegments { get; set; }
+    public DbSet<ShiftAssignment> ShiftAssignments { get; set; }
+
+    // مدارک تحصیلی
+    public DbSet<EducationDegree> EducationDegrees { get; set; }
+
+    // سمت‌های شغلی
+    public DbSet<JobPosition> JobPositions { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -44,6 +55,33 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.Property(e => e.NationalCode).HasMaxLength(20);
             entity.Property(e => e.InsuranceCode).HasMaxLength(50);
             entity.Property(e => e.HomePhoneNumber).HasMaxLength(15);
+
+            // رابطه با مدرک تحصیلی
+            entity.HasOne(e => e.EducationDegree)
+                .WithMany(d => d.Users)
+                .HasForeignKey(e => e.EducationDegreeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // رابطه با سمت شغلی
+            entity.HasOne(e => e.JobPosition)
+                .WithMany(j => j.Users)
+                .HasForeignKey(e => e.JobPositionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // رابطه سلسله مراتب سازمانی (مدیر-زیردست)
+            entity.HasOne(e => e.Manager)
+                .WithMany(m => m.DirectReports)
+                .HasForeignKey(e => e.ManagerId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // تنظیمات ApplicationRole
+        builder.Entity<ApplicationRole>(entity =>
+        {
+            entity.HasOne(r => r.Company)
+                .WithMany()
+                .HasForeignKey(r => r.CompanyId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // تنظیمات Menu
@@ -137,7 +175,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.Property(u => u.Code).HasMaxLength(50);
 
             entity.HasOne(u => u.Company)
-                .WithMany()
+                .WithMany(c => c.Units)
                 .HasForeignKey(u => u.CompanyId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -167,6 +205,60 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
                 .WithMany(u => u.UserRoleUnits)
                 .HasForeignKey(uru => uru.UnitId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // تنظیمات ShiftDefinition
+        builder.Entity<ShiftDefinition>(entity =>
+        {
+            entity.Property(s => s.Name).HasMaxLength(200).IsRequired();
+            entity.Property(s => s.Description).HasMaxLength(500);
+            entity.HasMany(s => s.RotationSegments)
+                .WithOne(r => r.ShiftDefinition)
+                .HasForeignKey(r => r.ShiftDefinitionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // تنظیمات ShiftRotationSegment
+        builder.Entity<ShiftRotationSegment>(entity =>
+        {
+            entity.Property(r => r.Label).HasMaxLength(50).IsRequired();
+            entity.Property(r => r.DurationDays).IsRequired();
+        });
+
+        // تنظیمات ShiftAssignment
+        builder.Entity<ShiftAssignment>(entity =>
+        {
+            entity.HasOne(a => a.User)
+                .WithMany()
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(a => a.ShiftDefinition)
+                .WithMany()
+                .HasForeignKey(a => a.ShiftDefinitionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(a => new { a.UserId, a.StartDate, a.EndDate });
+        });
+
+        // تنظیمات EducationDegree
+        builder.Entity<EducationDegree>(entity =>
+        {
+            entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+        });
+
+        // تنظیمات JobPosition
+        builder.Entity<JobPosition>(entity =>
+        {
+            entity.Property(j => j.Title).HasMaxLength(200).IsRequired();
+            entity.Property(j => j.Code).HasMaxLength(50);
+            entity.Property(j => j.Description).HasMaxLength(500);
+
+            // سلسله‌مراتب سمت‌های شغلی
+            entity.HasOne(j => j.ParentPosition)
+                .WithMany(p => p.SubPositions)
+                .HasForeignKey(j => j.ParentPositionId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

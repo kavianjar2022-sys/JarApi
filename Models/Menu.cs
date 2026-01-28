@@ -2,7 +2,7 @@ namespace JarApi.Models;
 
 public class Menu
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     
     // نام منو
     public string Name { get; set; } = string.Empty;
@@ -20,7 +20,7 @@ public class Menu
     public int DisplayOrder { get; set; }
     
     // منوی والد (برای زیرمنوها)
-    public int? ParentMenuId { get; set; }
+    public Guid? ParentMenuId { get; set; }
     public Menu? ParentMenu { get; set; }
     
     // زیرمنوها

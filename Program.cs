@@ -1,5 +1,6 @@
 using JarApi.Data;
 using JarApi.Models;
+using JarApi.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,25 +53,24 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!))
     };
-    // Add events to help debugging token validation failures
-    options.Events = new JwtBearerEvents
+
+    // Debug events (Development only)
+    if (builder.Environment.IsDevelopment())
     {
-        OnMessageReceived = context =>
+        options.Events = new JwtBearerEvents
         {
-            Console.WriteLine($"[Jwt] OnMessageReceived - Authorization header: {context.Request.Headers["Authorization"]}");
-            return Task.CompletedTask;
-        },
-        OnAuthenticationFailed = context =>
-        {
-            Console.WriteLine($"[Jwt] OnAuthenticationFailed - Exception: {context.Exception?.Message}");
-            return Task.CompletedTask;
-        },
-        OnTokenValidated = context =>
-        {
-            Console.WriteLine($"[Jwt] OnTokenValidated - Principal: {context.Principal?.Identity?.Name}");
-            return Task.CompletedTask;
-        }
-    };
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"[Jwt] OnAuthenticationFailed - Exception: {context.Exception?.Message}");
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine($"[Jwt] OnTokenValidated - Principal: {context.Principal?.Identity?.Name}");
+                return Task.CompletedTask;
+            }
+        };
+    }
 });
 
 builder.Services.AddAuthorization();
@@ -77,16 +78,17 @@ builder.Services.AddAuthorization();
 // CORS for frontend (Vite dev server on 5173)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("Frontend", policy =>
-        policy.WithOrigins(
-                "http://localhost:5173",
-                "http://127.0.0.1:5173"
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-    );
+    options.AddPolicy("AllowFromFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
 });
 
+builder.Services.AddMvc();
+builder.Services.AddCors();
 // Add Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -94,7 +96,7 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "JarApi - احراز هویت با کد پرسنلی",
-        Version = "v1.1",
+        Version = "v1.3",
         Description = "سیستم احراز هویت با ASP.NET Core Identity و JWT Token"
     });
 
@@ -123,59 +125,83 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+
+    // No explicit servers - allow Swagger to work with any URL
 });
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+// Health checks
+builder.Services.AddHealthChecks();
+
+// Add global exception handler
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 // Add Controllers
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
+// Use exception handler
+app.UseExceptionHandler();
+
 // Configure the HTTP request pipeline.
+// Enable Swagger in all environments for easy API testing
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "JarApi v1");
+    c.RoutePrefix = string.Empty; // Swagger در روت برنامه
+});
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "JarApi v1");
-        c.RoutePrefix = string.Empty; // Swagger در روت برنامه
-    });
     app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
 
-// Apply CORS before auth to affect 401/403 as well
-app.UseCors("Frontend");
+// Serve static files (for test-api.html, test-api.js, etc.)
+app.UseStaticFiles();
 
+// Apply CORS before auth to affect 401/403 as well
+app.UseCors("AllowFromFrontend");
+
+
+// Routing
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Test page shortcut: http://localhost:5257/test-api
+app.MapGet("/test-api", async (HttpContext context) =>
+{
+    var filePath = Path.Combine(app.Environment.WebRootPath ?? app.Environment.ContentRootPath, "test-api.html");
+    if (!File.Exists(filePath))
+        return Results.NotFound(new { success = false, message = "test-api.html یافت نشد" });
+
+    context.Response.ContentType = "text/html; charset=utf-8";
+    await context.Response.SendFileAsync(filePath);
+    return Results.Empty;
+}).AllowAnonymous();
+
 app.MapControllers();
+
+// Health check endpoint
+app.MapHealthChecks("/health");
 
 var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
 app.Run();
+
+// برای دسترسی در Integration Tests
+public partial class Program { }
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {

@@ -8,7 +8,7 @@ public class UserRoleCompany
     public string RoleId { get; set; } = string.Empty;
     public ApplicationRole Role { get; set; } = null!;
 
-    public int CompanyId { get; set; }
+    public Guid CompanyId { get; set; }
     public Company Company { get; set; } = null!;
 
     // زمان اختصاص سمت (اختیاری)

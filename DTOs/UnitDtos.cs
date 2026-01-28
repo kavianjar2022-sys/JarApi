@@ -4,12 +4,12 @@ namespace JarApi.DTOs;
 
 public class UnitDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Code { get; set; }
-    public int CompanyId { get; set; }
+    public Guid CompanyId { get; set; }
     public string? CompanyName { get; set; }
-    public int? ParentUnitId { get; set; }
+    public Guid? ParentUnitId { get; set; }
     public string? ParentUnitName { get; set; }
     public bool IsActive { get; set; }
     public List<UnitDto>? SubUnits { get; set; }
@@ -18,23 +18,29 @@ public class UnitDto
 public class CreateUnitDto
 {
     [Required(ErrorMessage = "نام واحد الزامی است")]
+    [MaxLength(200, ErrorMessage = "نام واحد نباید بیشتر از ۲۰۰ کاراکتر باشد")]
     public string Name { get; set; } = string.Empty;
     
+    [MaxLength(50, ErrorMessage = "کد واحد نباید بیشتر از ۵۰ کاراکتر باشد")]
     public string? Code { get; set; }
     
     [Required(ErrorMessage = "شناسه شرکت الزامی است")]
-    public int CompanyId { get; set; }
+    public Guid CompanyId { get; set; }
     
-    public int? ParentUnitId { get; set; }
+    public Guid? ParentUnitId { get; set; }
     public bool IsActive { get; set; } = true;
 }
 
 public class UpdateUnitDto
 {
+    [MaxLength(200, ErrorMessage = "نام واحد نباید بیشتر از ۲۰۰ کاراکتر باشد")]
     public string? Name { get; set; }
+    
+    [MaxLength(50, ErrorMessage = "کد واحد نباید بیشتر از ۵۰ کاراکتر باشد")]
     public string? Code { get; set; }
-    public int? CompanyId { get; set; }
-    public int? ParentUnitId { get; set; }
+    
+    public Guid? CompanyId { get; set; }
+    public Guid? ParentUnitId { get; set; }
     public bool? IsActive { get; set; }
 }
 
@@ -47,7 +53,7 @@ public class AssignRoleToUserInUnitDto
     public string RoleId { get; set; } = string.Empty;
     
     [Required(ErrorMessage = "شناسه واحد الزامی است")]
-    public int UnitId { get; set; }
+    public Guid UnitId { get; set; }
 }
 
 public class RemoveRoleFromUserInUnitDto
@@ -59,14 +65,14 @@ public class RemoveRoleFromUserInUnitDto
     public string RoleId { get; set; } = string.Empty;
     
     [Required(ErrorMessage = "شناسه واحد الزامی است")]
-    public int UnitId { get; set; }
+    public Guid UnitId { get; set; }
 }
 
 public class UnitInfoDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Code { get; set; }
-    public int CompanyId { get; set; }
+    public Guid CompanyId { get; set; }
     public string? CompanyName { get; set; }
 }

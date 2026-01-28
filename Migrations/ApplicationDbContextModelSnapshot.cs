@@ -27,6 +27,9 @@ namespace JarApi.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<Guid?>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -43,6 +46,8 @@ namespace JarApi.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
@@ -67,6 +72,9 @@ namespace JarApi.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("EducationDegreeId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -83,6 +91,9 @@ namespace JarApi.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("HireDate")
                         .HasColumnType("datetime2");
 
@@ -94,6 +105,9 @@ namespace JarApi.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<Guid?>("JobPositionId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -104,6 +118,9 @@ namespace JarApi.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ManagerId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("MobileNumber")
                         .HasMaxLength(15)
@@ -147,6 +164,12 @@ namespace JarApi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EducationDegreeId");
+
+                    b.HasIndex("JobPositionId");
+
+                    b.HasIndex("ManagerId");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -163,11 +186,9 @@ namespace JarApi.Migrations
 
             modelBuilder.Entity("JarApi.Models.Company", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
@@ -189,13 +210,65 @@ namespace JarApi.Migrations
                     b.ToTable("Companies");
                 });
 
-            modelBuilder.Entity("JarApi.Models.Menu", b =>
+            modelBuilder.Entity("JarApi.Models.EducationDegree", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EducationDegrees");
+                });
+
+            modelBuilder.Entity("JarApi.Models.JobPosition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Level")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid?>("ParentPositionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentPositionId");
+
+                    b.ToTable("JobPositions");
+                });
+
+            modelBuilder.Entity("JarApi.Models.Menu", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("int");
@@ -212,8 +285,8 @@ namespace JarApi.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int?>("ParentMenuId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ParentMenuId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -236,8 +309,8 @@ namespace JarApi.Migrations
                     b.Property<string>("RoleId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("MenuId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("MenuId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("CanCreate")
                         .HasColumnType("bit");
@@ -263,8 +336,8 @@ namespace JarApi.Migrations
                     b.Property<string>("RoleId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("WidgetId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("WidgetId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("CanConfigure")
                         .HasColumnType("bit");
@@ -279,20 +352,122 @@ namespace JarApi.Migrations
                     b.ToTable("RoleWidgets");
                 });
 
-            modelBuilder.Entity("JarApi.Models.Unit", b =>
+            modelBuilder.Entity("JarApi.Models.ShiftAssignment", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RotationStartIndex")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("ShiftDefinitionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("ShiftDefinitionId");
+
+                    b.HasIndex("UserId", "StartDate", "EndDate");
+
+                    b.ToTable("ShiftAssignments");
+                });
+
+            modelBuilder.Entity("JarApi.Models.ShiftDefinition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("FixedBreakMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan?>("FixedEndTime")
+                        .HasColumnType("time");
+
+                    b.Property<TimeSpan?>("FixedStartTime")
+                        .HasColumnType("time");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("WorkingDaysMask")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ShiftDefinitions");
+                });
+
+            modelBuilder.Entity("JarApi.Models.ShiftRotationSegment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("DurationDays")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan?>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<bool>("IsOff")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("ShiftDefinitionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeSpan?>("StartTime")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShiftDefinitionId");
+
+                    b.ToTable("ShiftRotationSegments");
+                });
+
+            modelBuilder.Entity("JarApi.Models.Unit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Code")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("CompanyId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -302,8 +477,8 @@ namespace JarApi.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<int?>("ParentUnitId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ParentUnitId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -322,8 +497,8 @@ namespace JarApi.Migrations
                     b.Property<string>("RoleId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("CompanyId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("AssignedAt")
                         .HasColumnType("datetime2");
@@ -345,8 +520,8 @@ namespace JarApi.Migrations
                     b.Property<string>("RoleId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("UnitId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UnitId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("AssignedAt")
                         .HasColumnType("datetime2");
@@ -362,11 +537,9 @@ namespace JarApi.Migrations
 
             modelBuilder.Entity("JarApi.Models.Widget", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Configuration")
                         .HasColumnType("nvarchar(max)");
@@ -510,6 +683,50 @@ namespace JarApi.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("JarApi.Models.ApplicationRole", b =>
+                {
+                    b.HasOne("JarApi.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("JarApi.Models.ApplicationUser", b =>
+                {
+                    b.HasOne("JarApi.Models.EducationDegree", "EducationDegree")
+                        .WithMany("Users")
+                        .HasForeignKey("EducationDegreeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("JarApi.Models.JobPosition", "JobPosition")
+                        .WithMany("Users")
+                        .HasForeignKey("JobPositionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("JarApi.Models.ApplicationUser", "Manager")
+                        .WithMany("DirectReports")
+                        .HasForeignKey("ManagerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("EducationDegree");
+
+                    b.Navigation("JobPosition");
+
+                    b.Navigation("Manager");
+                });
+
+            modelBuilder.Entity("JarApi.Models.JobPosition", b =>
+                {
+                    b.HasOne("JarApi.Models.JobPosition", "ParentPosition")
+                        .WithMany("SubPositions")
+                        .HasForeignKey("ParentPositionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ParentPosition");
+                });
+
             modelBuilder.Entity("JarApi.Models.Menu", b =>
                 {
                     b.HasOne("JarApi.Models.Menu", "ParentMenu")
@@ -558,10 +775,44 @@ namespace JarApi.Migrations
                     b.Navigation("Widget");
                 });
 
+            modelBuilder.Entity("JarApi.Models.ShiftAssignment", b =>
+                {
+                    b.HasOne("JarApi.Models.ApplicationUser", null)
+                        .WithMany("ShiftAssignments")
+                        .HasForeignKey("ApplicationUserId");
+
+                    b.HasOne("JarApi.Models.ShiftDefinition", "ShiftDefinition")
+                        .WithMany()
+                        .HasForeignKey("ShiftDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JarApi.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ShiftDefinition");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("JarApi.Models.ShiftRotationSegment", b =>
+                {
+                    b.HasOne("JarApi.Models.ShiftDefinition", "ShiftDefinition")
+                        .WithMany("RotationSegments")
+                        .HasForeignKey("ShiftDefinitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ShiftDefinition");
+                });
+
             modelBuilder.Entity("JarApi.Models.Unit", b =>
                 {
                     b.HasOne("JarApi.Models.Company", "Company")
-                        .WithMany()
+                        .WithMany("Units")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -681,9 +932,30 @@ namespace JarApi.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("JarApi.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("DirectReports");
+
+                    b.Navigation("ShiftAssignments");
+                });
+
             modelBuilder.Entity("JarApi.Models.Company", b =>
                 {
+                    b.Navigation("Units");
+
                     b.Navigation("UserRoleCompanies");
+                });
+
+            modelBuilder.Entity("JarApi.Models.EducationDegree", b =>
+                {
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("JarApi.Models.JobPosition", b =>
+                {
+                    b.Navigation("SubPositions");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("JarApi.Models.Menu", b =>
@@ -691,6 +963,11 @@ namespace JarApi.Migrations
                     b.Navigation("RoleMenus");
 
                     b.Navigation("SubMenus");
+                });
+
+            modelBuilder.Entity("JarApi.Models.ShiftDefinition", b =>
+                {
+                    b.Navigation("RotationSegments");
                 });
 
             modelBuilder.Entity("JarApi.Models.Unit", b =>

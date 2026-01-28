@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JarApi - API Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .console {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .console-line {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .console-line.success {
+            color: #4ec9b0;
+        }
+
+        .console-line.error {
+            color: #f48771;
+        }
+
+        .console-line.info {
+            color: #569cd6;
+        }
+
+        .console-line.warning {
+            color: #dcdcaa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin: 5px 5px 5px 0;
+        }
+
+        .status-badge.logged-in {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.logged-out {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .input-group {
+            margin: 15px 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .clear-btn {
+            background: #dc3545;
+            margin-top: 10px;
+        }
+
+        .clear-btn:hover {
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 JarApi Tester</h1>
+            <p>تست سریع و آسان API</p>
+            <div id="status"></div>
+        </div>
+
+        <div class="content">
+            <!-- Auth Section -->
+            <div class="section">
+                <h2>🔐 احراز هویت</h2>
+                
+                <div class="input-group">
+                    <label>کد پرسنلی:</label>
+                    <input type="text" id="personnelCode" value="12345" placeholder="کد پرسنلی را وارد کنید">
+                </div>
+                
+                <div class="input-group">
+                    <label>رمز عبور:</label>
+                    <input type="password" id="password" value="Pass@123" placeholder="رمز عبور را وارد کنید">
+                </div>
+
+                <div class="button-group">
+                    <button onclick="testLogin()">🔐 ورود</button>
+                    <button onclick="testRegister()">📝 ثبت‌نام تستی</button>
+                    <button onclick="testGetPermissions()">👤 دریافت دسترسی‌ها</button>
+                    <button onclick="clearAuth()" class="clear-btn">🚪 خروج</button>
+                </div>
+            </div>
+
+            <!-- Quick Tests -->
+            <div class="section">
+                <h2>⚡ تست‌های سریع</h2>
+                <div class="button-group">
+                    <button onclick="testFullFlow()">🚀 تست کامل جریان</button>
+                    <button onclick="testGetUsers()">📋 لیست کاربران</button>
+                    <button onclick="testGetDegrees()">🎓 مدارک تحصیلی</button>
+                    <button onclick="testGetCompanies()">🏢 لیست شرکت‌ها</button>
+                </div>
+            </div>
+
+            <!-- CRUD Tests -->
+            <div class="section">
+                <h2>📝 عملیات CRUD</h2>
+                <div class="button-group">
+                    <button onclick="testCreateDegree()">➕ ایجاد مدرک</button>
+                    <button onclick="testCreateCompany()">➕ ایجاد شرکت</button>
+                    <button onclick="testUpdateUser()">✏️ ویرایش کاربر</button>
+                </div>
+            </div>
+
+            <!-- Console Output -->
+            <div class="section">
+                <h2>📟 خروجی Console</h2>
+                <button onclick="clearConsole()" class="clear-btn">🗑️ پاک کردن</button>
+                <div id="console" class="console">
+                    <div class="console-line info">Console آماده است...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="test-api.js"></script>
+    <script>
+        // Override console methods to display in UI
+        const consoleDiv = document.getElementById('console');
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        function addToConsole(message, type = 'info') {
+            const line = document.createElement('div');
+            line.className = `console-line ${type}`;
+            line.textContent = typeof message === 'object' ? JSON.stringify(message, null, 2) : message;
+            consoleDiv.appendChild(line);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            args.forEach(arg => addToConsole(arg, 'info'));
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            args.forEach(arg => addToConsole(arg, 'error'));
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            args.forEach(arg => addToConsole(arg, 'warning'));
+        };
+
+        function updateStatus() {
+            const statusDiv = document.getElementById('status');
+            const user = JarApiTest.currentUser;
+            
+            if (user) {
+                statusDiv.innerHTML = `
+                    <span class="status-badge logged-in">
+                        ✅ وارد شده: ${user.firstName} ${user.lastName} (${user.personnelCode})
+                    </span>
+                `;
+            } else {
+                statusDiv.innerHTML = `
+                    <span class="status-badge logged-out">❌ خارج شده</span>
+                `;
+            }
+        }
+
+        function clearConsole() {
+            consoleDiv.innerHTML = '<div class="console-line info">Console پاک شد...</div>';
+        }
+
+        function clearAuth() {
+            JarApiTest.clearAuth();
+            updateStatus();
+        }
+
+        async function testLogin() {
+            const personnelCode = document.getElementById('personnelCode').value;
+            const password = document.getElementById('password').value;
+            await JarApiTest.login(personnelCode, password);
+            updateStatus();
+        }
+
+        async function testRegister() {
+            const userData = {
+                personnelCode: `TEST${Date.now()}`,
+                password: 'Test@123',
+                firstName: 'تست',
+                lastName: 'کاربر',
+                gender: 0,
+                mobileNumber: '09123456789'
+            };
+            await JarApiTest.register(userData);
+            updateStatus();
+        }
+
+        async function testGetPermissions() {
+            await JarApiTest.getUserPermissions();
+        }
+
+        async function testFullFlow() {
+            await JarApiTest.testFullFlow();
+            updateStatus();
+        }
+
+        async function testGetUsers() {
+            await JarApiTest.getUsers({ page: 1, pageSize: 10 });
+        }
+
+        async function testGetDegrees() {
+            await JarApiTest.getEducationDegrees();
+        }
+
+        async function testGetCompanies() {
+            await JarApiTest.getCompanies();
+        }
+
+        async function testCreateDegree() {
+            await JarApiTest.createEducationDegree({
+                name: `مدرک تست ${new Date().toLocaleTimeString('fa-IR')}`,
+                isActive: true
+            });
+        }
+
+        async function testCreateCompany() {
+            await JarApiTest.createCompany({
+                name: `شرکت تست ${new Date().toLocaleTimeString('fa-IR')}`,
+                code: `TST${Date.now()}`,
+                address: 'آدرس تستی',
+                isActive: true
+            });
+        }
+
+        async function testUpdateUser() {
+            const user = JarApiTest.currentUser;
+            if (!user) {
+                console.error('ابتدا وارد شوید!');
+                return;
+            }
+
+            await JarApiTest.updateUser(user.userId, {
+                firstName: user.firstName,
+                lastName: user.lastName + ' (ویرایش شده)',
+                gender: user.gender
+            });
+        }
+
+        // Initialize
+        updateStatus();
+        
+        // Check if API is running
+        fetch('http://172.16.68.238:5257/health')
+            .then(res => {
+                if (res.ok) {
+                    console.log('✅ API در حال اجرا است');
+                }
+            })
+            .catch(() => {
+                console.error('❌ API در حال اجرا نیست! لطفاً ابتدا API را اجرا کنید');
+            });
+    </script>
+</body>
+</html>

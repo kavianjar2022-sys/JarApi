@@ -33,4 +33,25 @@ public class ApplicationUser : IdentityUser
 
     // شماره تلفن خانه
     public string? HomePhoneNumber { get; set; }
+
+    // جنسیت
+    public Gender Gender { get; set; } = Gender.Male;
+
+    // مدرک تحصیلی کاربر
+    public Guid? EducationDegreeId { get; set; }
+    public EducationDegree? EducationDegree { get; set; }
+
+    // شیفت‌های کاربر
+    public ICollection<ShiftAssignment> ShiftAssignments { get; set; } = new List<ShiftAssignment>();
+
+    // سمت شغلی کاربر
+    public Guid? JobPositionId { get; set; }
+    public JobPosition? JobPosition { get; set; }
+
+    // مدیر مستقیم کاربر
+    public string? ManagerId { get; set; }
+    public ApplicationUser? Manager { get; set; }
+
+    // زیردستان مستقیم
+    public ICollection<ApplicationUser> DirectReports { get; set; } = new List<ApplicationUser>();
 }

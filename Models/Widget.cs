@@ -2,7 +2,7 @@ namespace JarApi.Models;
 
 public class Widget
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     
     // نام ویجت
     public string Name { get; set; } = string.Empty;

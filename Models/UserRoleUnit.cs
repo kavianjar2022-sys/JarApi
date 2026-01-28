@@ -8,7 +8,7 @@ public class UserRoleUnit
     public string RoleId { get; set; } = string.Empty;
     public ApplicationRole Role { get; set; } = null!;
     
-    public int UnitId { get; set; }
+    public Guid UnitId { get; set; }
     public Unit Unit { get; set; } = null!;
     
     public DateTime AssignedAt { get; set; } = DateTime.UtcNow;

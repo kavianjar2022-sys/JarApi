@@ -5,13 +5,13 @@ namespace JarApi.DTOs;
 // DTOs برای Menu
 public class MenuDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string? Icon { get; set; }
     public string? Url { get; set; }
     public int DisplayOrder { get; set; }
-    public int? ParentMenuId { get; set; }
+    public Guid? ParentMenuId { get; set; }
     public bool IsActive { get; set; }
     public List<MenuDto>? SubMenus { get; set; }
 }
@@ -27,7 +27,7 @@ public class CreateMenuDto
     public string? Icon { get; set; }
     public string? Url { get; set; }
     public int DisplayOrder { get; set; }
-    public int? ParentMenuId { get; set; }
+    public Guid? ParentMenuId { get; set; }
     public bool IsActive { get; set; } = true;
 }
 
@@ -38,14 +38,14 @@ public class UpdateMenuDto
     public string? Icon { get; set; }
     public string? Url { get; set; }
     public int? DisplayOrder { get; set; }
-    public int? ParentMenuId { get; set; }
+    public Guid? ParentMenuId { get; set; }
     public bool? IsActive { get; set; }
 }
 
 // DTOs برای Widget
 public class WidgetDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
@@ -99,7 +99,21 @@ public class AssignMenusToRoleDto
 
 public class MenuPermissionDto
 {
-    public int MenuId { get; set; }
+    public Guid MenuId { get; set; }
+    public bool CanView { get; set; } = true;
+    public bool CanCreate { get; set; } = false;
+    public bool CanEdit { get; set; } = false;
+    public bool CanDelete { get; set; } = false;
+}
+
+public class UpdateMenuPermissionDto
+{
+    [Required(ErrorMessage = "شناسه نقش الزامی است")]
+    public string RoleId { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "شناسه منو الزامی است")]
+    public Guid MenuId { get; set; }
+
     public bool CanView { get; set; } = true;
     public bool CanCreate { get; set; } = false;
     public bool CanEdit { get; set; } = false;
@@ -117,7 +131,19 @@ public class AssignWidgetsToRoleDto
 
 public class WidgetPermissionDto
 {
-    public int WidgetId { get; set; }
+    public Guid WidgetId { get; set; }
+    public bool CanView { get; set; } = true;
+    public bool CanConfigure { get; set; } = false;
+}
+
+public class UpdateWidgetPermissionDto
+{
+    [Required(ErrorMessage = "شناسه نقش الزامی است")]
+    public string RoleId { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "شناسه ویجت الزامی است")]
+    public Guid WidgetId { get; set; }
+
     public bool CanView { get; set; } = true;
     public bool CanConfigure { get; set; } = false;
 }
@@ -127,6 +153,21 @@ public class CreateRoleDto
 {
     [Required(ErrorMessage = "نام نقش الزامی است")]
     public string RoleName { get; set; } = string.Empty;
+    
+    public bool IsGlobalAccess { get; set; } = false;
+    
+    /// <summary>
+    /// شناسه شرکت - اگر null باشد نقش سراسری است
+    /// </summary>
+    public Guid? CompanyId { get; set; }
+}
+
+// DTO برای ویرایش نقش
+public class UpdateRoleDto
+{
+    public string? RoleName { get; set; }
+    public bool? IsGlobalAccess { get; set; }
+    public Guid? CompanyId { get; set; }
 }
 
 // DTO برای تخصیص نقش به کاربر
@@ -135,8 +176,8 @@ public class AssignRoleToUserDto
     [Required(ErrorMessage = "کد پرسنلی الزامی است")]
     public string PersonnelCode { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "نام نقش الزامی است")]
-    public string RoleName { get; set; } = string.Empty;
+    [Required(ErrorMessage = "شناسه نقش الزامی است")]
+    public string RoleId { get; set; } = string.Empty;
 }
 
 public class AssignRoleToUserInCompanyDto
@@ -148,7 +189,7 @@ public class AssignRoleToUserInCompanyDto
     public string RoleId { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "شناسه شرکت الزامی است")]
-    public int CompanyId { get; set; }
+    public Guid CompanyId { get; set; }
 }
 
 public class RemoveRoleFromUserInCompanyDto
@@ -160,5 +201,5 @@ public class RemoveRoleFromUserInCompanyDto
     public string RoleId { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "شناسه شرکت الزامی است")]
-    public int CompanyId { get; set; }
+    public Guid CompanyId { get; set; }
 }

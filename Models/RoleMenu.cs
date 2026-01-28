@@ -8,7 +8,7 @@ public class RoleMenu
     public string RoleId { get; set; } = string.Empty;
     public ApplicationRole Role { get; set; } = null!;
     
-    public int MenuId { get; set; }
+    public Guid MenuId { get; set; }
     public Menu Menu { get; set; } = null!;
     
     // دسترسی‌های اضافی (اختیاری)

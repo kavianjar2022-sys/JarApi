@@ -60,6 +60,14 @@ dotnet build
 dotnet run
 ```
 
+## Frontend Handoff
+
+- Base URL (Development): `http://localhost:5257`
+- Full API documentation: see [API-Documentation-FA.md](API-Documentation-FA.md)
+- CORS is enabled for `http://localhost:5173` and `http://127.0.0.1:5173`
+
+Use the JWT token returned from login in the `Authorization` header as `Bearer <token>` for protected endpoints.
+
 ## API Endpoints
 
 ### Authentication
